@@ -1,11 +1,11 @@
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
-
-import java.util.Timer;
-import java.util.TimerTask;
+import javafx.util.Duration;
 
 public class TimerManager {
     private long remainingTime;
-    private Timer timer;
+    private Timeline timeline;
     private boolean isRunning;
 
     public TimerManager(long remainingTime) {
@@ -26,24 +26,20 @@ public class TimerManager {
             return;
         }
         isRunning = true;
-        timer = new Timer();
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                remainingTime--;
-                if (remainingTime <= 0) {
-                    timer.cancel();
-                    isRunning = false;
-                    Platform.runLater(onFinish);
-                }
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            remainingTime--;
+            if (remainingTime <= 0) {
+                stop();
+                Platform.runLater(onFinish);
             }
-        };
-        timer.scheduleAtFixedRate(task, 1000, 1000);
+        }));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
     }
 
     public void stop() {
-        if (timer != null) {
-            timer.cancel();
+        if (timeline != null) {
+            timeline.stop();
         }
         isRunning = false;
     }
