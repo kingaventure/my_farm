@@ -5,6 +5,9 @@ public class Stock {
     private int chickens;
     private int cows;
     private int sheep;
+    private int wheat;
+    private int corn;
+    private int rice;
 
     public Stock() {
         this.wheatSeeds = 0;
@@ -13,6 +16,30 @@ public class Stock {
         this.chickens = 0;
         this.cows = 0;
         this.sheep = 0;
+    }
+
+    public int getWheat() {
+        return wheat;
+    }
+
+    public void addWheat(int amount) {
+        this.wheat += amount;
+    }
+
+    public int getCorn() {
+        return corn;
+    }
+
+    public void addCorn(int amount) {
+        this.corn += amount;
+    }
+
+    public int getRice() {
+        return rice;
+    }
+
+    public void addRice(int amount) {
+        this.rice += amount;
     }
 
     public int getWheatSeeds() {

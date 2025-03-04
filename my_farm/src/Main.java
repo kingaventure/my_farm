@@ -1,4 +1,5 @@
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -15,10 +16,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main extends Application {
 
@@ -244,21 +242,22 @@ public class Main extends Application {
             BorderPane pane = new BorderPane();
             pane.setStyle("-fx-background-color: " + toRgbString(color) + ";");
             Scene scene = new Scene(pane, 200, 200);
-            Button plantButton = new Button("");
-            if( toRgbString(color).equals(toRgbString(Color.GREEN)) ) {
+            final Button plantButton;
+            if (toRgbString(color).equals(toRgbString(Color.GREEN))) {
                 plantButton = new Button("Planter");
-            } else if( toRgbString(color).equals(toRgbString(Color.PINK)) ) {
+            } else if (toRgbString(color).equals(toRgbString(Color.PINK))) {
                 plantButton = new Button("Elever");
+            } else {
+                plantButton = new Button("");
             }
-
+            ProgressBar progressBar = new ProgressBar();
             plantButton.setOnAction(e -> {
-                if( toRgbString(color).equals(toRgbString(Color.GREEN)) ) {
-                    showPlantOptions();
-                } else if( toRgbString(color).equals(toRgbString(Color.PINK)) ) {
+                if (toRgbString(color).equals(toRgbString(Color.GREEN))) {
+                    showPlantOptions(plantButton, progressBar);
+                } else if (toRgbString(color).equals(toRgbString(Color.PINK))) {
                     showAlert("Vous avez élevé un animal.");
                 }
             });
-            ProgressBar progressBar = new ProgressBar();
 
             VBox vbox = new VBox(plantButton, progressBar);
             vbox.setAlignment(Pos.CENTER);
@@ -271,6 +270,76 @@ public class Main extends Application {
         }
     }
 
+    private void showPlantOptions(Button button, ProgressBar progressBar) {
+        List<String> choices = Arrays.asList(
+                "Graines de blé (" + stock.getWheatSeeds() + ")",
+                "Graines de maïs (" + stock.getCornSeeds() + ")",
+                "Graines de riz (" + stock.getRiceSeeds() + ")"
+        );
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
+        dialog.setTitle("Plantation");
+        dialog.setHeaderText("Choisissez le type de graine à planter:");
+        dialog.setContentText("Graine:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(choice -> {
+            if (choice.contains("Graines de blé") && stock.getWheatSeeds() > 0) {
+                stock.addWheatSeeds(-1);
+                startPlantingTimer(button, progressBar, "wheat");
+            } else if (choice.contains("Graines de maïs") && stock.getCornSeeds() > 0) {
+                stock.addCornSeeds(-1);
+                startPlantingTimer(button, progressBar, "corn");
+            } else if (choice.contains("Graines de riz") && stock.getRiceSeeds() > 0) {
+                stock.addRiceSeeds(-1);
+                startPlantingTimer(button, progressBar, "rice");
+            } else {
+                showAlert("Vous n'avez pas assez de graines pour planter " + choice);
+            }
+        });
+    }
+
+    private void startPlantingTimer(Button button, ProgressBar progressBar, String seedType) {
+        Rectangle yellowRect = new Rectangle(100, 100, Color.YELLOW);
+        VBox vbox = (VBox) button.getParent();
+        vbox.getChildren().set(0, yellowRect);
+
+        TimerManager timerManager = new TimerManager(20);
+        timerManager.start(() -> {
+            Platform.runLater(() -> {
+                yellowRect.setFill(Color.LIGHTGRAY);
+                showAlert("Récolte prête!");
+                switch (seedType) {
+                    case "wheat":
+                        stock.addWheat(1);
+                        break;
+                    case "corn":
+                        stock.addCorn(1);
+                        break;
+                    case "rice":
+                        stock.addRice(1);
+                        break;
+                }
+            });
+        });
+
+        progressBar.setProgress(0);
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                Platform.runLater(() -> {
+                    double progress = progressBar.getProgress() + 0.05;
+                    progressBar.setProgress(progress);
+                    if (progress >= 1) {
+                        timerManager.stop();
+                        this.cancel();
+                    }
+                });
+            }
+        };
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(task, 1000, 1000);
+    }
     private String toRgbString(Color color) {
         int r = (int) (color.getRed() * 255);
         int g = (int) (color.getGreen() * 255);
@@ -334,40 +403,13 @@ public class Main extends Application {
         marketStage.show();
     }
 
-    private void showPlantOptions() {
-        List<String> choices = Arrays.asList(
-                "Graines de blé (" + stock.getWheatSeeds() + ")",
-                "Graines de maïs (" + stock.getCornSeeds() + ")",
-                "Graines de riz (" + stock.getRiceSeeds() + ")"
-        );
 
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
-        dialog.setTitle("Plantation");
-        dialog.setHeaderText("Choisissez le type de graine à planter:");
-        dialog.setContentText("Graine:");
-
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(choice -> {
-            if (choice.contains("Graines de blé") && stock.getWheatSeeds() > 0) {
-                stock.addWheatSeeds(-1);
-                // Logic to plant wheat seeds
-            } else if (choice.contains("Graines de maïs") && stock.getCornSeeds() > 0) {
-                stock.addCornSeeds(-1);
-                // Logic to plant corn seeds
-            } else if (choice.contains("Graines de riz") && stock.getRiceSeeds() > 0) {
-                stock.addRiceSeeds(-1);
-                // Logic to plant rice seeds
-            } else {
-                showAlert("Vous n'avez pas assez de graines pour planter " + choice);
-            }
-        });
-    }
 
     private void showStock() {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Stock");
         alert.setHeaderText(null);
-        alert.setContentText("Graines : \n\nGraines de blé : " + stock.getWheatSeeds() + "\nGraines de riz : " + stock.getRiceSeeds() + "\nGraines de maïs : " + stock.getCornSeeds() + "\n\nAnimaux : \n\nPoulets : " + stock.getChickens() + "\nVaches : " + stock.getCows() + "\nMoutons : " + stock.getSheep());
+        alert.setContentText("Graines : \n\nGraines de blé : " + stock.getWheatSeeds() + "\nGraines de riz : " + stock.getRiceSeeds() + "\nGraines de maïs : " + stock.getCornSeeds() + "\n\nAnimaux : \n\nPoulets : " + stock.getChickens() + "\nVaches : " + stock.getCows() + "\nMoutons : " + stock.getSheep() + "\n\nProduits : \n\nBlé : " + stock.getWheat() + "\nRiz : " + stock.getRice() + "\nMaïs : " + stock.getCorn());
         alert.showAndWait();
     }
 
