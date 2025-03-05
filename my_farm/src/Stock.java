@@ -8,6 +8,9 @@ public class Stock {
     private int wheat;
     private int corn;
     private int rice;
+    private int eggs;
+    private int milk;
+    private int wool;
 
     public Stock() {
         this.wheatSeeds = 0;
@@ -16,6 +19,30 @@ public class Stock {
         this.chickens = 0;
         this.cows = 0;
         this.sheep = 0;
+    }
+
+    public int getEggs() {
+        return eggs;
+    }
+
+    public void addEggs(int amount) {
+        this.eggs += amount;
+    }
+
+    public int getMilk() {
+        return milk;
+    }
+
+    public void addMilk(int amount) {
+        this.milk += amount;
+    }
+
+    public int getWool() {
+        return wool;
+    }
+
+    public void addWool(int amount) {
+        this.wool += amount;
     }
 
     public int getWheat() {
