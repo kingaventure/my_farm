@@ -7,10 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
@@ -31,14 +28,14 @@ public class Main extends Application {
     private int coins = 1000;
     private Label coinLabel = new Label("Pièces: " + coins);
     private Button saveButton = new Button("Sauvegarder");
-    private Button houseButton = new Button("Maison");
+    private Button houseButton = new Button("Grange");
     private Button marketButton = new Button("Marché");
+    private Button infoButton = new Button("Information");
     private Stock stock = new Stock();
 
     @Override
     public void start(Stage primaryStage) {
         GridPane gridPane = new GridPane();
-
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLUMNS; col++) {
                 Rectangle rect = new Rectangle(RECT_SIZE, RECT_SIZE);
@@ -85,9 +82,16 @@ public class Main extends Application {
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
         HBox titleBox = new HBox(titleLabel);
         titleBox.setAlignment(Pos.CENTER);
-
-        coinLabel.setStyle("-fx-background-color: yellow; -fx-text-fill: black; -fx-padding: 5px;");
-
+        infoButton.setBackground(Background.fill(Color.GREEN));
+        infoButton.setTextFill(Color.WHITE);
+        coinLabel.setBackground(Background.fill(Color.YELLOW));
+        coinLabel.setTextFill(Color.BLACK);
+        saveButton.setBackground(Background.fill(Color.BLUE));
+        saveButton.setTextFill(Color.WHITE);
+        houseButton.setBackground(Background.fill(Color.RED));
+        houseButton.setTextFill(Color.WHITE);
+        marketButton.setBackground(Background.fill(Color.ORANGE));
+        marketButton.setTextFill(Color.WHITE);
         HBox coinBox = new HBox(coinLabel);
         coinBox.setAlignment(Pos.CENTER);
         HBox houseBox = new HBox(houseButton);
@@ -96,7 +100,9 @@ public class Main extends Application {
         marketBox.setAlignment(Pos.CENTER);
         HBox saveBox = new HBox(saveButton);
         saveBox.setAlignment(Pos.CENTER);
-        VBox menuBox = new VBox(coinBox, houseBox, saveBox, marketBox);
+        HBox infoBox = new HBox(infoButton);
+        infoBox.setAlignment(Pos.CENTER);
+        VBox menuBox = new VBox(coinBox, houseBox, saveBox, marketBox, infoBox);
         menuBox.setAlignment(Pos.TOP_LEFT);
         menuBox.setSpacing(10);
 
@@ -104,7 +110,7 @@ public class Main extends Application {
         root.setTop(titleBox);
         root.setLeft(menuBox);
         root.setCenter(gridPane);
-
+        root.setBackground(Background.fill(Color.GRAY));
         Scene scene = new Scene(root);
         scene.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.S) {
@@ -115,10 +121,21 @@ public class Main extends Application {
         saveButton.setOnAction(event -> saveGridState());
         marketButton.setOnAction(event -> openMarket());
         houseButton.setOnAction(event -> showStock());
+        infoButton.setOnAction(event -> showInformation());
 
         primaryStage.setScene(scene);
         primaryStage.setTitle("MyFarm Julien");
         primaryStage.show();
+
+
+    }
+
+    private void showInformation() {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Information");
+        alert.setHeaderText(null);
+        alert.setContentText("Bienvenue dans MyFarm Julien. Vous pouvez acheter des parcelles de terrain en cliquant dessus avec le bouton gauche de la souris. Vous pouvez également vendre des parcelles en cliquant dessus avec le bouton droit de la souris. Pour sauvegarder l'état de la ferme, appuyez sur la touche S, pour commencer à planter ou élever presser clique droit sur une parcelle déja acheter. Si vous plantez une graine sur une parcelle adjacente à une autre parcelle de champ, vous obtiendrez un bonus de récolte. Vous pouvez également acheter des graines, des animaux et vendre des produits sur le marché. Bonne chance!");
+        alert.showAndWait();
     }
 
     private void saveGridState() {
@@ -140,11 +157,9 @@ public class Main extends Application {
                 for (int col = 0; col < COLUMNS; col++) {
                     Color color = (Color) rectangles[row][col].getFill();
                     if (color.equals(Color.GREEN)) {
-                        writer.print("2");
-                    } else if (color.equals(Color.PINK)) {
-                        writer.print("3");
-                    } else if (color.equals(Color.BLUE)) {
                         writer.print("1");
+                    } else if (color.equals(Color.PINK)) {
+                        writer.print("2");
                     } else {
                         writer.print("0");
                     }
@@ -155,6 +170,7 @@ public class Main extends Application {
             e.printStackTrace();
         }
     }
+
 
     private void loadGridState() {
         File file = new File(SAVE_FILE);
@@ -219,12 +235,10 @@ public class Main extends Application {
                 String line = scanner.nextLine();
                 for (int col = 0; col < COLUMNS; col++) {
                     char ch = line.charAt(col);
-                    if (ch == '2') {
+                    if (ch == '1') {
                         rectangles[row][col].setFill(Color.GREEN);
-                    } else if (ch == '3') {
+                    } else if (ch == '2') {
                         rectangles[row][col].setFill(Color.PINK);
-                    } else if (ch == '1') {
-                        rectangles[row][col].setFill(Color.BLUE);
                     } else {
                         rectangles[row][col].setFill(Color.LIGHTGRAY);
                     }
@@ -235,9 +249,11 @@ public class Main extends Application {
         }
     }
 
+
     private void updateCoinLabel() {
         coinLabel.setText("Pièces: " + coins);
     }
+
 
     private void showAlert(String message) {
         Alert alert = new Alert(AlertType.INFORMATION);
@@ -246,6 +262,7 @@ public class Main extends Application {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
 
     private boolean confirmSale() {
         Alert alert = new Alert(AlertType.CONFIRMATION);
@@ -256,6 +273,7 @@ public class Main extends Application {
         return result.isPresent() && result.get() == ButtonType.OK;
     }
 
+
     private String chooseParcelType() {
         List<String> choices = Arrays.asList("Champ", "Enclos");
         ChoiceDialog<String> dialog = new ChoiceDialog<>("Champ", choices);
@@ -265,6 +283,7 @@ public class Main extends Application {
         Optional<String> result = dialog.showAndWait();
         return result.orElse(null);
     }
+
 
     private void showColorModal(Rectangle rect) {
         Color color = (Color) rect.getFill();
@@ -298,6 +317,8 @@ public class Main extends Application {
                 }
             });
 
+
+
             VBox vbox = new VBox(plantButton, progressBar);
             vbox.setAlignment(Pos.CENTER);
             vbox.setSpacing(10);
@@ -308,6 +329,7 @@ public class Main extends Application {
             colorStage.show();
         }
     }
+
 
     private void showPlantOptions(Button button, ProgressBar progressBar, Stage colorStage, Rectangle rect) {
         List<String> choices = Arrays.asList(
@@ -325,19 +347,20 @@ public class Main extends Application {
         result.ifPresent(choice -> {
             if (choice.contains("Graines de blé") && stock.getWheatSeeds() > 0) {
                 stock.addWheatSeeds(-1);
-                startPlantingTimer(button, progressBar, "wheat", colorStage, rect);
+                startPlantingTimer(button, progressBar, "Blé", colorStage, rect);
             } else if (choice.contains("Graines de maïs") && stock.getCornSeeds() > 0) {
                 stock.addCornSeeds(-1);
-                startPlantingTimer(button, progressBar, "corn", colorStage, rect);
+                startPlantingTimer(button, progressBar, "Maïs", colorStage, rect);
             } else if (choice.contains("Graines de riz") && stock.getRiceSeeds() > 0) {
                 stock.addRiceSeeds(-1);
-                startPlantingTimer(button, progressBar, "rice", colorStage, rect);
+                startPlantingTimer(button, progressBar, "Riz", colorStage, rect);
             } else {
                 showAlert("Vous n'avez pas assez de graines pour planter " + choice);
                 colorStage.close();
             }
         });
     }
+
 
     private void showAnimalOptions(Button plantButton, ProgressBar progressBar, Stage colorStage, Rectangle rect) {
         List<String> choices = Arrays.asList(
@@ -372,16 +395,17 @@ public class Main extends Application {
         });
     }
 
+
     private void startPlantingTimer(Button button, ProgressBar progressBar, String seedType, Stage colorStage, Rectangle rect) {
         int growTime;
         switch (seedType) {
-            case "wheat":
+            case "Blé":
                 growTime = 20;
                 break;
-            case "corn":
+            case "Maïs":
                 growTime = 50;
                 break;
-            case "rice":
+            case "Riz":
                 growTime = 100;
                 break;
             default:
@@ -400,15 +424,17 @@ public class Main extends Application {
                 colorStage.close();
                 showAlert("La plantation de " + seedType + " est terminée!");
                 Random random = new Random();
+                int numberOfCropTouching = calculateBonusTouchingCrop(rect);
+
                 switch (seedType) {
-                    case "wheat":
-                        stock.addWheat(random.nextInt(3)+ 1);
+                    case "Blé":
+                        stock.addWheat((random.nextInt(3)+ 1) * numberOfCropTouching);
                         break;
-                    case "corn":
-                        stock.addCorn(random.nextInt(5)+ 1);
+                    case "Maïs":
+                        stock.addCorn((random.nextInt(5)+ 1) * numberOfCropTouching);
                         break;
-                    case "rice":
-                        stock.addRice(random.nextInt(8)+ 1);
+                    case "Riz":
+                        stock.addRice((random.nextInt(8)+ 1) * numberOfCropTouching);
                         break;
                 }
             });
@@ -425,17 +451,18 @@ public class Main extends Application {
         timeline.play();
     }
 
+
     private void startAnimalTimer(Button plantButton, ProgressBar progressBar, String type, Stage stage, Rectangle rect) {
         int growTime;
         switch (type) {
             case "chicken":
-                growTime = 10;
+                growTime = 100;
                 break;
             case "cow":
-                growTime = 20;
+                growTime = 120;
                 break;
             case "sheep":
-                growTime = 15;
+                growTime = 80;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown animal type: " + type);
@@ -485,6 +512,52 @@ public class Main extends Application {
         int b = (int) (color.getBlue() * 255);
         return String.format("rgb(%d, %d, %d)", r, g, b);
     }
+
+    private int getCropTouching(Rectangle rect) {
+        int cropTouching = 0;
+        Color targetColor = (Color) rect.getFill();
+        int row = -1, col = -1;
+
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLUMNS; c++) {
+                if (rectangles[r][c] == rect) {
+                    row = r;
+                    col = c;
+                    break;
+                }
+            }
+            if (row != -1) break;
+        }
+
+        int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        for (int[] dir : directions) {
+            int newRow = row + dir[0];
+            int newCol = col + dir[1];
+            if (newRow >= 0 && newRow < ROWS && newCol >= 0 && newCol < COLUMNS) {
+                if (rectangles[newRow][newCol].getFill().equals(targetColor)) {
+                    cropTouching++;
+                }
+            }
+        }
+
+        return cropTouching;
+    }
+
+    private int calculateBonusTouchingCrop(Rectangle rect) {
+        int bonus = 0;
+        int cropTouching = getCropTouching(rect);
+        if (cropTouching > 4) {
+            bonus = 10;
+        } else if (cropTouching < 4 && cropTouching > 1) {
+            bonus = 5;
+        } else if (cropTouching == 1) {
+            bonus = 3;
+        } else {
+            bonus = 1;
+        }
+        return bonus;
+    }
+
 
     private void openMarket() {
         Random random = new Random();
@@ -634,7 +707,6 @@ public class Main extends Application {
     }
 
 
-
     private void showStock() {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Stock");
@@ -643,7 +715,9 @@ public class Main extends Application {
         alert.showAndWait();
     }
 
+
     public static void main(String[] args) {
         launch(args);
     }
+
 }
