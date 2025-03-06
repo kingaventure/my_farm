@@ -1,24 +1,17 @@
-import javafx.application.Application;
-import javafx.application.Platform;
+import javafx.application.*;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseButton;
+import javafx.scene.image.*;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 public class Main extends Application {
 
@@ -141,6 +134,7 @@ public class Main extends Application {
 
     }
 
+
     private void showInformation() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Information");
@@ -200,7 +194,7 @@ public class Main extends Application {
             BorderPane pane = new BorderPane();
             pane.setStyle("-fx-background-color: " + toRgbString(color) + ";");
             Scene scene = new Scene(pane, 200, 200);
-            final Button plantButton;
+            Button plantButton;
             if (toRgbString(color).equals(toRgbString(Color.GREEN))) {
                 plantButton = new Button("Planter");
             } else if (toRgbString(color).equals(toRgbString(Color.PINK))) {
