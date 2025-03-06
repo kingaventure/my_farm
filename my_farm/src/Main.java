@@ -2,9 +2,9 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
@@ -14,16 +14,11 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import java.util.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceDialog;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.Alert;
-import javafx.scene.layout.BorderPane;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 public class Main extends Application {
 
@@ -147,7 +142,7 @@ public class Main extends Application {
     }
 
     private void showInformation() {
-        Alert alert = new Alert(AlertType.INFORMATION);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Information");
         alert.setHeaderText(null);
         alert.setContentText("Bienvenue dans MyFarm Julien. Vous pouvez acheter des parcelles de terrain en cliquant dessus avec le bouton gauche de la souris. Vous pouvez également vendre des parcelles en cliquant dessus avec le bouton droit de la souris. Pour sauvegarder l'état de la ferme, appuyez sur la touche S, pour commencer à planter ou élever presser clique droit sur une parcelle déja acheter. Si vous plantez une graine sur une parcelle adjacente à une autre parcelle de champ, vous obtiendrez un bonus de récolte. Vous pouvez également acheter des graines, des animaux et vendre des produits sur le marché. Bonne chance!");
@@ -161,7 +156,7 @@ public class Main extends Application {
 
 
     private void showAlert(String message) {
-        Alert alert = new Alert(AlertType.INFORMATION);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Informations");
         alert.setHeaderText(null);
         alert.setContentText(message);
@@ -170,7 +165,7 @@ public class Main extends Application {
 
 
     private boolean confirmSale() {
-        Alert alert = new Alert(AlertType.CONFIRMATION);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation vente");
         alert.setHeaderText(null);
         alert.setContentText("Voulez vous vraiment vendre cette parcelle ?");
@@ -505,7 +500,7 @@ public class Main extends Application {
 
 
     private void showStock() {
-        Alert alert = new Alert(AlertType.INFORMATION);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Stock");
         alert.setHeaderText(null);
         alert.setContentText("Graines : \n\nGraines de blé : " + stock.getWheatSeeds() + "\nGraines de riz : " + stock.getRiceSeeds() + "\nGraines de maïs : " + stock.getCornSeeds() + "\n\nAnimaux : \n\nPoulets : " + stock.getChickens() + "\nVaches : " + stock.getCows() + "\nMoutons : " + stock.getSheep() + "\n\nProduits : \n\nBlé : " + stock.getWheat() + "\nRiz : " + stock.getRice() + "\nMaïs : " + stock.getCorn() + "\nOeufs : " + stock.getEggs() + "\nLait : " + stock.getMilk() + "\nLaine : " + stock.getWool());
