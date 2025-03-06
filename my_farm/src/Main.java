@@ -1,10 +1,10 @@
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
@@ -14,16 +14,22 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-
-import java.io.*;
 import java.util.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Alert;
+import javafx.scene.layout.BorderPane;
 
 public class Main extends Application {
 
     private static int ROWS = 40;
     private static int COLUMNS = 40;
     private static int RECT_SIZE = 20;
-    private static String SAVE_FILE = "grid_state.txt";
     private Rectangle[][] rectangles = new Rectangle[ROWS][COLUMNS];
     private int coins = 1000;
     private Label coinLabel = new Label("Pièces: " + coins);
@@ -32,9 +38,13 @@ public class Main extends Application {
     private Button marketButton = new Button("Marché");
     private Button infoButton = new Button("Information");
     private Stock stock = new Stock();
+    private Market market;
+    private Save saveManager;
 
     @Override
     public void start(Stage primaryStage) {
+        market = new Market(coins, stock);
+        saveManager = new Save(coins, stock, rectangles);
         GridPane gridPane = new GridPane();
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLUMNS; col++) {
@@ -75,12 +85,14 @@ public class Main extends Application {
             }
         }
 
-        loadGridState();
+        saveManager.loadGridState();
+        coins = saveManager.getCoins();
         updateCoinLabel();
 
         Label titleLabel = new Label("My Farm");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
         HBox titleBox = new HBox(titleLabel);
+
         titleBox.setAlignment(Pos.CENTER);
         infoButton.setBackground(Background.fill(Color.GREEN));
         infoButton.setTextFill(Color.WHITE);
@@ -92,6 +104,7 @@ public class Main extends Application {
         houseButton.setTextFill(Color.WHITE);
         marketButton.setBackground(Background.fill(Color.ORANGE));
         marketButton.setTextFill(Color.WHITE);
+
         HBox coinBox = new HBox(coinLabel);
         coinBox.setAlignment(Pos.CENTER);
         HBox houseBox = new HBox(houseButton);
@@ -114,12 +127,15 @@ public class Main extends Application {
         Scene scene = new Scene(root);
         scene.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.S) {
-                saveGridState();
+                saveManager.saveGridState();
             }
         });
 
-        saveButton.setOnAction(event -> saveGridState());
-        marketButton.setOnAction(event -> openMarket());
+        saveButton.setOnAction(event -> {
+            saveManager.setCoins(coins);
+            saveManager.saveGridState();
+        });
+        marketButton.setOnAction(event -> market.openMarket());
         houseButton.setOnAction(event -> showStock());
         infoButton.setOnAction(event -> showInformation());
 
@@ -136,117 +152,6 @@ public class Main extends Application {
         alert.setHeaderText(null);
         alert.setContentText("Bienvenue dans MyFarm Julien. Vous pouvez acheter des parcelles de terrain en cliquant dessus avec le bouton gauche de la souris. Vous pouvez également vendre des parcelles en cliquant dessus avec le bouton droit de la souris. Pour sauvegarder l'état de la ferme, appuyez sur la touche S, pour commencer à planter ou élever presser clique droit sur une parcelle déja acheter. Si vous plantez une graine sur une parcelle adjacente à une autre parcelle de champ, vous obtiendrez un bonus de récolte. Vous pouvez également acheter des graines, des animaux et vendre des produits sur le marché. Bonne chance!");
         alert.showAndWait();
-    }
-
-    private void saveGridState() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(SAVE_FILE))) {
-            writer.println(coins);
-            writer.println(stock.getWheatSeeds());
-            writer.println(stock.getCornSeeds());
-            writer.println(stock.getRiceSeeds());
-            writer.println(stock.getChickens());
-            writer.println(stock.getCows());
-            writer.println(stock.getSheep());
-            writer.println(stock.getWheat());
-            writer.println(stock.getCorn());
-            writer.println(stock.getRice());
-            writer.println(stock.getEggs());
-            writer.println(stock.getMilk());
-            writer.println(stock.getWool());
-            for (int row = 0; row < ROWS; row++) {
-                for (int col = 0; col < COLUMNS; col++) {
-                    Color color = (Color) rectangles[row][col].getFill();
-                    if (color.equals(Color.GREEN)) {
-                        writer.print("1");
-                    } else if (color.equals(Color.PINK)) {
-                        writer.print("2");
-                    } else {
-                        writer.print("0");
-                    }
-                }
-                writer.println();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    private void loadGridState() {
-        File file = new File(SAVE_FILE);
-        if (!file.exists()) {
-            return;
-        }
-
-        try (Scanner scanner = new Scanner(file)) {
-            if (scanner.hasNextInt()) {
-                coins = scanner.nextInt();
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addWheatSeeds(scanner.nextInt());
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addCornSeeds(scanner.nextInt());
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addRiceSeeds(scanner.nextInt());
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addChickens(scanner.nextInt());
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addCows(scanner.nextInt());
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addSheep(scanner.nextInt());
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addWheat(scanner.nextInt());
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addCorn(scanner.nextInt());
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addRice(scanner.nextInt());
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addEggs(scanner.nextInt());
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addMilk(scanner.nextInt());
-                scanner.nextLine();
-            }
-            if (scanner.hasNextInt()) {
-                stock.addWool(scanner.nextInt());
-                scanner.nextLine();
-            }
-            for (int row = 0; row < ROWS; row++) {
-                String line = scanner.nextLine();
-                for (int col = 0; col < COLUMNS; col++) {
-                    char ch = line.charAt(col);
-                    if (ch == '1') {
-                        rectangles[row][col].setFill(Color.GREEN);
-                    } else if (ch == '2') {
-                        rectangles[row][col].setFill(Color.PINK);
-                    } else {
-                        rectangles[row][col].setFill(Color.LIGHTGRAY);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -309,9 +214,18 @@ public class Main extends Application {
                 plantButton = new Button("");
             }
             ProgressBar progressBar = new ProgressBar();
+
+            Image image = new Image("/img/test.png");
+            ImageView imageView = new ImageView();
+            imageView.setImage(image);
+            imageView.setFitWidth(100);
+            imageView.setPreserveRatio(true);
+            imageView.setSmooth(true);
+            imageView.setCache(true);
+
             plantButton.setOnAction(e -> {
                 if (toRgbString(color).equals(toRgbString(Color.GREEN))) {
-                    showPlantOptions(plantButton, progressBar, colorStage, rect);
+                    showPlantOptions(imageView, plantButton, progressBar, colorStage, rect);
                 } else if (toRgbString(color).equals(toRgbString(Color.PINK))) {
                     showAnimalOptions(plantButton, progressBar, colorStage, rect);
                 }
@@ -319,7 +233,7 @@ public class Main extends Application {
 
 
 
-            VBox vbox = new VBox(plantButton, progressBar);
+            VBox vbox = new VBox(imageView, plantButton, progressBar);
             vbox.setAlignment(Pos.CENTER);
             vbox.setSpacing(10);
             pane.setCenter(vbox);
@@ -331,7 +245,7 @@ public class Main extends Application {
     }
 
 
-    private void showPlantOptions(Button button, ProgressBar progressBar, Stage colorStage, Rectangle rect) {
+    private void showPlantOptions(ImageView imageView, Button button, ProgressBar progressBar, Stage colorStage, Rectangle rect) {
         List<String> choices = Arrays.asList(
                 "Graines de blé (" + stock.getWheatSeeds() + ")",
                 "Graines de maïs (" + stock.getCornSeeds() + ")",
@@ -347,13 +261,16 @@ public class Main extends Application {
         result.ifPresent(choice -> {
             if (choice.contains("Graines de blé") && stock.getWheatSeeds() > 0) {
                 stock.addWheatSeeds(-1);
-                startPlantingTimer(button, progressBar, "Blé", colorStage, rect);
+                imageView.setImage(new Image("/img/sprut.png"));
+                startPlantingTimer(imageView, button, progressBar, "Blé", colorStage, rect);
             } else if (choice.contains("Graines de maïs") && stock.getCornSeeds() > 0) {
                 stock.addCornSeeds(-1);
-                startPlantingTimer(button, progressBar, "Maïs", colorStage, rect);
+                imageView.setImage(new Image("/img/sprut.png"));
+                startPlantingTimer(imageView, button, progressBar, "Maïs", colorStage, rect);
             } else if (choice.contains("Graines de riz") && stock.getRiceSeeds() > 0) {
                 stock.addRiceSeeds(-1);
-                startPlantingTimer(button, progressBar, "Riz", colorStage, rect);
+                imageView.setImage(new Image("/img/sprut.png"));
+                startPlantingTimer(imageView, button, progressBar, "Riz", colorStage, rect);
             } else {
                 showAlert("Vous n'avez pas assez de graines pour planter " + choice);
                 colorStage.close();
@@ -396,7 +313,7 @@ public class Main extends Application {
     }
 
 
-    private void startPlantingTimer(Button button, ProgressBar progressBar, String seedType, Stage colorStage, Rectangle rect) {
+    private void startPlantingTimer(ImageView imageView, Button button, ProgressBar progressBar, String seedType, Stage colorStage, Rectangle rect) {
         int growTime;
         switch (seedType) {
             case "Blé":
@@ -420,6 +337,7 @@ public class Main extends Application {
             Platform.runLater(() -> {
                 progressBar.setProgress(1.0);
                 button.setDisable(false);
+
                 rect.setFill(originalColor);
                 colorStage.close();
                 showAlert("La plantation de " + seedType + " est terminée!");
@@ -442,10 +360,35 @@ public class Main extends Application {
 
         progressBar.setProgress(0);
         button.setDisable(true);
-
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             double progress = progressBar.getProgress() + 1.0 / growTime;
             progressBar.setProgress(progress);
+
+            if (progress >= 0.25 && progress < 0.26) {
+                switch (seedType) {
+                    case "Blé":
+                        imageView.setImage(new Image("/img/wheat_half.png"));
+                        break;
+                    case "Maïs":
+                        imageView.setImage(new Image("/img/corn_half.png"));
+                        break;
+                    case "Riz":
+                        imageView.setImage(new Image("/img/rice_half.png"));
+                        break;
+                }
+            } else if (progress >= 0.75 && progress < 0.76) {
+                switch (seedType) {
+                    case "Blé":
+                        imageView.setImage(new Image("/img/wheat_hole.png"));
+                        break;
+                    case "Maïs":
+                        imageView.setImage(new Image("/img/corn_hole.png"));
+                        break;
+                    case "Riz":
+                        imageView.setImage(new Image("/img/rice_hole.png"));
+                        break;
+                }
+            }
         }));
         timeline.setCycleCount(growTime);
         timeline.play();
@@ -513,6 +456,7 @@ public class Main extends Application {
         return String.format("rgb(%d, %d, %d)", r, g, b);
     }
 
+
     private int getCropTouching(Rectangle rect) {
         int cropTouching = 0;
         Color targetColor = (Color) rect.getFill();
@@ -543,6 +487,7 @@ public class Main extends Application {
         return cropTouching;
     }
 
+
     private int calculateBonusTouchingCrop(Rectangle rect) {
         int bonus = 0;
         int cropTouching = getCropTouching(rect);
@@ -556,154 +501,6 @@ public class Main extends Application {
             bonus = 1;
         }
         return bonus;
-    }
-
-
-    private void openMarket() {
-        Random random = new Random();
-        int wheatSeedPrice = 50 + (random.nextBoolean() ? 10 : -10);
-        int cornSeedPrice = 60 + (random.nextBoolean() ? 10 : -10);
-        int riceSeedPrice = 70 + (random.nextBoolean() ? 10 : -10);
-        int chickenPrice = 100 + random.nextInt(101);
-        int cowPrice = 200 + random.nextInt(201);
-        int sheepPrice = 150 + random.nextInt(151);
-        int wheatPrice = 50 + random.nextInt(51);
-        int ricePrice = 60 + random.nextInt(61);
-        int cornPrice = 70 + random.nextInt(71);
-        int eggPrice = 60 + random.nextInt(11);
-        int milkPrice = 70 + random.nextInt(21);
-        int woolPrice = 80 + random.nextInt(31);
-
-        ListView<String> listView = new ListView<>();
-        listView.getItems().addAll(
-                "Graines de blé (" + stock.getWheatSeeds() + ") - " + wheatSeedPrice + " pièces",
-                "Graines de maïs (" + stock.getCornSeeds() + ") - " + cornSeedPrice + " pièces",
-                "Graines de riz (" + stock.getRiceSeeds() + ") - " + riceSeedPrice + " pièces",
-                "Poulet (" + stock.getChickens() + ") - " + chickenPrice + " pièces",
-                "Vache (" + stock.getCows() + ") - " + cowPrice + " pièces",
-                "Mouton (" + stock.getSheep() + ") - " + sheepPrice + " pièces",
-                "Blé (" + stock.getWheat() + ") - " + wheatPrice + " pièces",
-                "Riz (" + stock.getRice() + ") - " + ricePrice + " pièces",
-                "Maïs (" + stock.getCorn() + ") - " + cornPrice + " pièces",
-                "Oeufs (" + stock.getEggs() + ") -" + eggPrice + " pièces",
-                "Lait (" + stock.getMilk() + ") -" + milkPrice + " pièces",
-                "Laine (" + stock.getWool() + ") -" + woolPrice + " pièces"
-        );
-        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
-        Button buyButton = new Button("Acheter");
-        buyButton.setOnAction(event -> {
-            ObservableList<String> selectedItems = listView.getSelectionModel().getSelectedItems();
-            int totalCost = 0;
-            for (String item : selectedItems) {
-                if (item.contains("Graines de blé") && coins >= wheatSeedPrice) {
-                    stock.addWheatSeeds(1);
-                    totalCost += wheatSeedPrice;
-                } else if (item.contains("Graines de maïs") && coins >= cornSeedPrice) {
-                    stock.addCornSeeds(1);
-                    totalCost += cornSeedPrice;
-                } else if (item.contains("Graines de riz") && coins >= riceSeedPrice) {
-                    stock.addRiceSeeds(1);
-                    totalCost += riceSeedPrice;
-                } else if (item.contains("Poulet") && coins >= chickenPrice) {
-                    stock.addChickens(1);
-                    totalCost += chickenPrice;
-                } else if (item.contains("Vache") && coins >= cowPrice) {
-                    stock.addCows(1);
-                    totalCost += cowPrice;
-                } else if (item.contains("Mouton") && coins >= sheepPrice) {
-                    stock.addSheep(1);
-                    totalCost += sheepPrice;
-                } else if (item.contains("Blé") && coins >= wheatPrice) {
-                    stock.addWheat(1);
-                    totalCost += wheatPrice;
-                } else if (item.contains("Riz") && coins >= ricePrice) {
-                    stock.addRice(1);
-                    totalCost += ricePrice;
-                } else if (item.contains("Maïs") && coins >= cornPrice) {
-                    stock.addCorn(1);
-                    totalCost += cornPrice;
-                } else if (item.contains("Oeufs")) {
-                    stock.addEggs(1);
-                    totalCost += eggPrice;
-                }
-                else if (item.contains("Lait")) {
-                    stock.addMilk(1);
-                    totalCost += milkPrice;
-                }
-                else if (item.contains("Laine")) {
-                    stock.addWool(1);
-                    totalCost += woolPrice;
-                }
-                else {
-                    showAlert("Vous n'avez pas assez de pièces pour acheter " + item);
-                    return;
-                }
-            }
-            if (coins >= totalCost) {
-                coins -= totalCost;
-                updateCoinLabel();
-            } else {
-                showAlert("Vous n'avez pas assez de pièces pour acheter les articles sélectionnés.");
-            }
-        });
-
-        Button sellButton = new Button("Vendre");
-        sellButton.setOnAction(event -> {
-            ObservableList<String> selectedItems = listView.getSelectionModel().getSelectedItems();
-            int totalGain = 0;
-            for (String item : selectedItems) {
-                if (item.contains("Graines de blé") && stock.getWheatSeeds() > 0) {
-                    stock.addWheatSeeds(-1);
-                    totalGain += wheatSeedPrice;
-                } else if (item.contains("Graines de maïs") && stock.getCornSeeds() > 0) {
-                    stock.addCornSeeds(-1);
-                    totalGain += cornSeedPrice;
-                } else if (item.contains("Graines de riz") && stock.getRiceSeeds() > 0) {
-                    stock.addRiceSeeds(-1);
-                    totalGain += riceSeedPrice;
-                } else if (item.contains("Poulet") && stock.getChickens() > 0) {
-                    stock.addChickens(-1);
-                    totalGain += chickenPrice;
-                } else if (item.contains("Vache") && stock.getCows() > 0) {
-                    stock.addCows(-1);
-                    totalGain += cowPrice;
-                } else if (item.contains("Mouton") && stock.getSheep() > 0) {
-                    stock.addSheep(-1);
-                    totalGain += sheepPrice;
-                } else if (item.contains("Blé") && stock.getWheat() > 0) {
-                    stock.addWheat(-1);
-                    totalGain += wheatPrice;
-                } else if (item.contains("Riz") && stock.getRice() > 0) {
-                    stock.addRice(-1);
-                    totalGain += ricePrice;
-                } else if (item.contains("Maïs") && stock.getCorn() > 0) {
-                    stock.addCorn(-1);
-                    totalGain += cornPrice;
-                } else if (item.contains("Oeufs") && stock.getEggs() > 0) {
-                    stock.addEggs(-1);
-                    totalGain += eggPrice;
-                    } else if ( item.contains("Lait") && stock.getMilk() > 0) {
-                    stock.addMilk(-1);
-                    totalGain += milkPrice;
-                    } else if ( item.contains("Laine") && stock.getWool() > 0) {
-                    stock.addWool(-1);
-                    totalGain += woolPrice;
-                } else {
-                    showAlert("Vous n'avez pas assez de stock pour vendre " + item);
-                    return;
-                }
-            }
-            coins += totalGain;
-            updateCoinLabel();
-        });
-
-        VBox vbox = new VBox(listView, buyButton, sellButton);
-        Scene scene = new Scene(vbox, 300, 400);
-        Stage marketStage = new Stage();
-        marketStage.setScene(scene);
-        marketStage.setTitle("Marché");
-        marketStage.show();
     }
 
 
