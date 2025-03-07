@@ -140,6 +140,8 @@ public class Plant {
         }));
         timeline.setCycleCount(growTime);
         timeline.play();
+        colorStage.setWidth(400);
+        colorStage.setHeight(400);
     }
 
     private int getCropTouching(Rectangle rect) {

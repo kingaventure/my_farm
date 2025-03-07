@@ -139,6 +139,8 @@ public class Main extends Application {
         Color color = (Color) rect.getFill();
         if (color.equals(Color.LIGHTGRAY)) {
             showAlert("Il n'y a rien ici.");
+        } else if (color.equals(Color.YELLOW)) {
+            showAlert("Parcelle déja ouverte.");
         } else {
             Stage colorStage = new Stage();
             colorStage.setOnCloseRequest(event -> {
@@ -149,7 +151,7 @@ public class Main extends Application {
 
             BorderPane pane = new BorderPane();
             pane.setStyle("-fx-background-color: " + toRgbString(color) + ";");
-            Scene scene = new Scene(pane, 200, 200);
+            Scene scene = new Scene(pane);
             Button plantButton;
             if (toRgbString(color).equals(toRgbString(Color.GREEN))) {
                 plantButton = new Button("Planter");
@@ -170,9 +172,9 @@ public class Main extends Application {
 
             plantButton.setOnAction(e -> {
                 if (toRgbString(color).equals(toRgbString(Color.GREEN))) {
-                    plant.showPlantOptions(imageView, plantButton, progressBar, colorStage, rect); // Use Plant instance
+                    plant.showPlantOptions(imageView, plantButton, progressBar, colorStage, rect);
                 } else if (toRgbString(color).equals(toRgbString(Color.PINK))) {
-                    animal.showAnimalOptions(imageView, plantButton, progressBar, colorStage, rect); // Use Animal instance
+                    animal.showAnimalOptions(imageView, plantButton, progressBar, colorStage, rect);
                 }
             });
 
@@ -183,6 +185,7 @@ public class Main extends Application {
 
             colorStage.setScene(scene);
             colorStage.setTitle("Zoom de parcelle");
+            colorStage.sizeToScene();
             colorStage.show();
         }
     }

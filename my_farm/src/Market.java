@@ -145,7 +145,7 @@ public class Market {
         });
 
         VBox vbox = new VBox(listView, buyButton, sellButton);
-        Scene scene = new Scene(vbox, 300, 400);
+        Scene scene = new Scene(vbox);
         Stage marketStage = new Stage();
         marketStage.setScene(scene);
         marketStage.setTitle("Marché");
