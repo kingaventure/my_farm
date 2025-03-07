@@ -1,11 +1,12 @@
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
@@ -16,18 +17,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-public class Animal extends Application {
+public class Animal {
     private Stock stock;
 
     public Animal(Stock stock) {
         this.stock = stock;
     }
 
-    @Override
-    public void start(Stage primaryStage) {
-    }
-
-    protected void showAnimalOptions(Button plantButton, ProgressBar progressBar, Stage colorStage, Rectangle rect) {
+    protected void showAnimalOptions(ImageView imageView, Button plantButton, ProgressBar progressBar, Stage colorStage, Rectangle rect) {
         List<String> choices = Arrays.asList(
                 "Poulet (" + stock.getChickens() + ")" + " - 1 blé",
                 "Vache (" + stock.getCows() + ") - 1 maïs",
@@ -42,17 +39,20 @@ public class Animal extends Application {
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(choice -> {
             if (choice.contains("Poulet") && stock.getWheat() > 0) {
-                stock.addChickens(1);
+                stock.addChickens(-1);
                 stock.addWheat(-1);
-                startAnimalTimer(plantButton, progressBar, "chicken", colorStage, rect);
+                imageView.setImage(new Image("/img/chick_yn.png"));
+                startAnimalTimer(imageView ,plantButton, progressBar, "chicken", colorStage, rect);
             } else if (choice.contains("Vache") && stock.getCorn() > 0) {
-                stock.addCows(1);
+                stock.addCows(-1);
                 stock.addCorn(-1);
-                startAnimalTimer(plantButton, progressBar, "cow", colorStage, rect);
+                imageView.setImage(new Image("/img/cow_yn.png"));
+                startAnimalTimer(imageView, plantButton, progressBar, "cow", colorStage, rect);
             } else if (choice.contains("Mouton") && stock.getRice() > 0) {
-                stock.addSheep(1);
+                stock.addSheep(-1);
                 stock.addRice(-1);
-                startAnimalTimer(plantButton, progressBar, "sheep", colorStage, rect);
+                imageView.setImage(new Image("/img/mout_yn.png"));
+                startAnimalTimer(imageView, plantButton, progressBar, "sheep", colorStage, rect);
             } else {
                 showAlert("Vous n'avez pas assez de ressources pour élever " + choice);
                 colorStage.close();
@@ -60,7 +60,7 @@ public class Animal extends Application {
         });
     }
 
-    private void startAnimalTimer(Button plantButton, ProgressBar progressBar, String type, Stage stage, Rectangle rect) {
+    private void startAnimalTimer(ImageView imageView, Button plantButton, ProgressBar progressBar, String type, Stage stage, Rectangle rect) {
         int growTime;
         switch (type) {
             case "chicken":
@@ -78,6 +78,7 @@ public class Animal extends Application {
 
         Color originalColor = (Color) rect.getFill();
         rect.setFill(Color.YELLOW);
+
 
         TimerManager timerManager = new TimerManager(growTime);
         timerManager.start(() -> {
@@ -108,6 +109,19 @@ public class Animal extends Application {
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             double progress = progressBar.getProgress() + 1.0 / growTime;
             progressBar.setProgress(progress);
+            if (progress >= 0.74 && progress < 0.75) {
+                switch (type) {
+                    case "chicken":
+                        imageView.setImage(new Image("/img/chick_ad.png"));
+                        break;
+                    case "cow":
+                        imageView.setImage(new Image("/img/cow_ad.png"));
+                        break;
+                    case "sheep":
+                        imageView.setImage(new Image("/img/mout_ad.png"));
+                        break;
+                }
+            }
         }));
         timeline.setCycleCount(growTime);
         timeline.play();

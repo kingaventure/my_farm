@@ -172,7 +172,7 @@ public class Main extends Application {
                 if (toRgbString(color).equals(toRgbString(Color.GREEN))) {
                     plant.showPlantOptions(imageView, plantButton, progressBar, colorStage, rect); // Use Plant instance
                 } else if (toRgbString(color).equals(toRgbString(Color.PINK))) {
-                    animal.showAnimalOptions(plantButton, progressBar, colorStage, rect); // Use Animal instance
+                    animal.showAnimalOptions(imageView, plantButton, progressBar, colorStage, rect); // Use Animal instance
                 }
             });
 
