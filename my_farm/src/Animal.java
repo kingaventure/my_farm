@@ -59,13 +59,13 @@ public class Animal {
         int growTime;
         switch (type) {
             case "chicken":
-                growTime = 100;
+                growTime = 40;
                 break;
             case "cow":
-                growTime = 120;
+                growTime = 50;
                 break;
             case "sheep":
-                growTime = 80;
+                growTime = 60;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown animal type: " + type);
